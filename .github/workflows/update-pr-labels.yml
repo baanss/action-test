@@ -1,0 +1,32 @@
+name: Update PR Labels
+
+on:
+  schedule:
+    # - cron: "0 0 * * *" # 매 정각 0시마다 실행
+    - cron: "0 * * * *" # 매 시 정각마다 실행
+
+jobs:
+  update-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt update
+          sudo apt install gh
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Update PR Labels
+        id: update-labels
+        run: |
+          for pr_number in $(gh pr list -s open -L 100 | awk '{print $1}'); do
+            pr_labels=$(gh pr view $pr_number --json labels -q '.labels[].name' -R | jq -r '.[]')
+            new_labels=$(echo "$pr_labels" | sed 's/D-5/D-4/g; s/D-4/D-3/g; s/D-3/D-2/g; s/D-2/D-1/g; s/D-1/D-0/g')
+            gh pr edit $pr_number -L "$pr_labels" -L "$new_labels"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
