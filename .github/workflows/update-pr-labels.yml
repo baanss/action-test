@@ -12,10 +12,17 @@ jobs:
     steps:
       - name: Install GitHub CLI
         run: |
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-          sudo apt-add-repository https://cli.github.com/packages
-          sudo apt update
-          sudo apt install gh
+          # Install GitHub CLI
+          GITHUB_CLI_VERSION="2.0.0"  # 원하는 버전을 입력하세요.
+          OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+          ARCH=$(uname -m)
+          URL="https://github.com/cli/cli/releases/download/v${GITHUB_CLI_VERSION}/gh_${GITHUB_CLI_VERSION}_${OS}_${ARCH}.tar.gz"
+          curl -L "${URL}" | tar xz
+          sudo mv gh_${GITHUB_CLI_VERSION}_${OS}_${ARCH}/gh /usr/local/bin/
+          rm -rf gh_${GITHUB_CLI_VERSION}_${OS}_${ARCH}
+
+      - name: Verify GitHub CLI installation
+        run: gh --version
 
       - name: Checkout repository
         uses: actions/checkout@v2
