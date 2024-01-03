@@ -36,16 +36,21 @@ delete_specific_files() {
     local files_to_delete=(
         "$folder_path/generate-template.sh"
         "$folder_path/.git"
-        #"$folder_path/deleted-files"
     )
 
     for file in "${files_to_delete[@]}"; do
-        if [ -f "$file" ]; then
-            rm -rf "$file"
-            echo "Deleted file: $file"
+        if [ -e "$file" ]; then  
+            if [ -d "$file" ]; then  
+                rm -rf "$file"  
+                echo "Deleted directory: $file"
+            else  
+                rm -f "$file"
+                echo "Deleted file: $file"
+            fi
         fi
     done
 }
+
 
 # Function: Compress folders
 compress_folder() {
