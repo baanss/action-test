@@ -21,7 +21,7 @@ jobs:
         run: |
           TAG_NAME=$(echo $GITHUB_REF | awk -F'/' '{print $NF}')
           echo "Extracted tag name is: $TAG_NAME"
-          echo "::set-output name=tag_name::$TAG_NAME"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Run generate-template.sh
         run: |
