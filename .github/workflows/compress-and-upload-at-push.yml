@@ -30,7 +30,7 @@ jobs:
 
       - name: Upload a file to Google Drive
         # uses: willo32/google-drive-upload-action@v1
-        uses: adityak74/google-drive-upload-git-action@main
+        uses: adityak74/google-drive-upload-git-action@v0.3
         with:
           # target: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
           # parent_folder_id: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
