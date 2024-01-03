@@ -2,7 +2,6 @@
 
 # Setting folder paths
 current_dir=$(pwd)
-# parent_dir=$(dirname "$current_dir")
 folder_path="$current_dir"
 
 # Function: Modify .env.template files
@@ -72,12 +71,11 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-service_code="$1" # 첫 번째 argument를 Service Code로 설정
-# tag="$2" # 두 번째 argument를 Tag로 설정
+service_code="$1"
 
-# refs/tags/ 부분을 제거하여 순수한 태그명 추출
+# Storing the extracted pure tag name in the 'tag' variable
 tag_ref="${2#refs/tags/}"
-tag="$tag_ref" # 추출된 순수한 태그명을 tag 변수에 저장
+tag="$tag_ref"
 
 new_folder_name="h-server-setting-$service_code-$tag"
 

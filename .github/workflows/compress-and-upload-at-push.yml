@@ -28,21 +28,12 @@ jobs:
           chmod +x generate-template.sh
           ./generate-template.sh ${{ matrix.tag }} ${{ steps.extract-tag.outputs.tag_name }}
 
-      # - name: Upload Artifacts
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: compressed-file-artifact
-      #     path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
-
-      # - name: Download Artifacts
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: compressed-file-artifact
-      #     path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
-
       - name: Upload a file to Google Drive
-        uses: willo32/google-drive-upload-action@v1
+        # uses: willo32/google-drive-upload-action@v1
+        uses: adityak74/google-drive-upload-git-action@main
         with:
-          target: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip # 압축 파일의 경로
+          # target: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+          # parent_folder_id: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          filename: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
           credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
-          parent_folder_id: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
