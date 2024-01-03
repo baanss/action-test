@@ -60,9 +60,19 @@ compress_folder() {
     echo "Folder compressed to '$zip_path.zip'"
 }
 
-# Set folder names and user input
-read -p "Enter Service Code: " service_code
-read -p "Enter Tag: " tag
+# Set folder names and command-line arguments
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <Service_Code> <Tag>"
+    exit 1
+fi
+
+service_code="$1" # 첫 번째 argument를 Service Code로 설정
+# tag="$2" # 두 번째 argument를 Tag로 설정
+
+# refs/tags/ 부분을 제거하여 순수한 태그명 추출
+tag_ref="${2#refs/tags/}"
+tag="$tag_ref" # 추출된 순수한 태그명을 tag 변수에 저장
+
 new_folder_name="h-server-setting-$service_code-$tag"
 
 # Copy folders
@@ -77,3 +87,7 @@ delete_specific_files "$folder_path/$new_folder_name"
 
 # Compress folders
 compress_folder "$folder_path" "$new_folder_name" "$new_folder_name"
+
+# Delete copied directory after compression
+rm -rf "$folder_path/$new_folder_name"
+echo "Copied directory '$new_folder_name' deleted."

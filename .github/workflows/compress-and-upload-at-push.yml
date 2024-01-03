@@ -1,0 +1,47 @@
+name: Upload to Google Drive on Tag Push
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tag: [sto, kid] # 실행할 태그를 여기에 지정하세요.
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract tag name
+        id: extract-tag
+        run: |
+          TAG_NAME=$(echo $GITHUB_REF | awk -F'/' '{print $NF}')
+          echo "Extracted tag name is: $TAG_NAME"
+          echo "::set-output name=tag_name::$TAG_NAME"
+
+      - name: Run generate-template.sh
+        run: |
+          ./generate-template.sh ${{ matrix.tag }} ${{ steps.extract-tag.outputs.tag_name }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: compressed-file-artifact
+          path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: compressed-file-artifact
+          path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+
+      - name: Upload a file to Google Drive
+        uses: willo32/google-drive-upload-action@v1
+        with:
+          target: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip # 압축 파일의 경로
+          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
+          parent_folder_id: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
