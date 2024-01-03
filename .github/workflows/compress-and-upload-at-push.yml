@@ -25,6 +25,7 @@ jobs:
 
       - name: Run generate-template.sh
         run: |
+          chmod +x generate-template.sh
           ./generate-template.sh ${{ matrix.tag }} ${{ steps.extract-tag.outputs.tag_name }}
 
       - name: Upload Artifacts
