@@ -1,0 +1,184 @@
+version: "3.8"
+
+services:
+  h-server-frontend:
+    image: asia-northeast3-docker.pkg.dev/rus-web/rus-onprem/rus-h-server:${FE_IMAGE_TAG}
+    restart: always
+    expose:
+      - 9000
+    platform: linux/amd64
+    environment:
+      API_URL: https://${SERVER_IP}:${USER_PORT}/api
+      IMAGE_DOMAIN: ${SERVER_IP}
+      RELEASE_YEAR: 2023
+      RELEASE_MONTH: 12
+      RELEASE_DAY: 8
+      RELEASE_VER: 1.1.0
+      SERVICE_CODE: ${SERVICE_CODE}
+      ENCRYPTION: ${ENCRYPTION}
+      CHANGE_PASSWORD_CYCLE_DAYS: ${CHANGE_PASSWORD_CYCLE_DAYS}
+      SURGERY_TYPE: ${SURGERY_TYPE}
+      LANGUAGE: ${LANGUAGE}
+    networks:
+      - app_network
+
+  h-server-backend:
+    image: asia-northeast3-docker.pkg.dev/rus-web/rus-onprem/h-server-backend:${BE_IMAGE_TAG}
+    restart: always
+    platform: linux/amd64
+    ports:
+      - ${BE_PORT}:9276
+    volumes:
+      - ./data:/usr/data
+      - ./data/dicom:/usr/data/dicom
+      - ./logs/user:/usr/logs
+      - ./localCA/localhost.crt:/etc/ssl/localCA/localhost.crt
+      - ./localCA/localhost.key:/etc/ssl/localCA/localhost.key
+    environment:
+      NODE_ENV: ${SERVER_ENV}
+      SERVER_HOST: h-server-backend
+      SERVER_PORT: "9276"
+      SERVER_URL: https://${SERVER_IP}:${USER_PORT}/api
+      REDIRECT_URL: https://${SERVER_IP}:${USER_PORT}
+      ORIGIN_DOMAIN: h-server-backend
+      APP_VERSION: ${BE_IMAGE_TAG}
+      CLIENT_TZ: ${CLIENT_TZ}
+      ENCRYPTION: ${ENCRYPTION}
+      SEED_DATA: ${SEED_DATA}
+      DB_HOST: postgresql
+      DB_PORT: "5432"
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      SERVER_CODE: ${SERVER_CODE}
+      SERVICE_CODE: ${SERVICE_CODE}
+      LOG_PATH: /usr/logs
+      STORAGE_PATH: /usr/data
+      HUID_START_INDEX: ${HUID_START_INDEX}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      HCLOUD_SERVER_URL: ${PROXY_URL}
+      SIGNED_CERT_PATH: /etc/ssl/localCA/localhost.crt
+      SIGNED_KEY_PATH: /etc/ssl/localCA/localhost.key
+      QR_SERVER_URL: http://scu:8080
+      QR_TIMEOUT_MS: ${QR_TIMEOUT_MS}
+      QR_MAX_COUNT: ${QR_MAX_COUNT}
+      PACS_SERVER_HOST: ${PACS_SERVER_HOST}
+      PACS_SERVER_PORT: ${PACS_SERVER_PORT}
+      PACS_SERVER_AET: ${PACS_SERVER_AET}
+      CRON_STATUS: active
+      CRON_SCHEDULE: ${CRON_SCHEDULE}
+      CRON_LOG_SCHEDULE: ${CRON_LOG_SCHEDULE}
+      CRON_DICOM_EXPIRED_DAYS: ${CRON_DICOM_EXPIRED_DAYS}
+      CRON_NOTIFICATION_EXPIRED_DAYS: ${CRON_NOTIFICATION_EXPIRED_DAYS}
+      CRON_SLEEP_USER_EXPIRED_DAYS: ${CRON_SLEEP_USER_EXPIRED_DAYS}
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      DISK_FREE_SPACE: ${DISK_FREE_SPACE}
+      SWAGGER_USER: hutom
+      SWAGGER_PASSWORD: hutom13579!
+      TZ: UTC
+    depends_on:
+      - postgresql
+    links:
+      - scu
+    networks:
+      - app_network
+
+  postgresql:
+    image: asia-northeast3-docker.pkg.dev/rus-web/rus-onprem/h-server-database:${BE_IMAGE_TAG}
+    restart: always
+    platform: linux/amd64
+    ports:
+      - ${DB_PORT}:5432
+    command: "-c logging_collector=on"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: UTC
+    volumes:
+      - ./.bashrc:/root/.bashrc
+      - ./database/postgresql:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  nginx-proxy:
+    image: asia-northeast3-docker.pkg.dev/rus-web/rus-onprem/h-server-nginx:${BE_IMAGE_TAG}
+    restart: always
+    platform: linux/amd64
+    ports:
+      - ${USER_PORT}:3030
+    volumes:
+      - ./localCA/localhost.crt:/etc/ssl/localCA/localhost.crt:ro
+      - ./localCA/localhost.key:/etc/ssl/localCA/localhost.key:ro
+      - ./logs/nginx:/etc/nginx/logs
+    depends_on:
+      - h-server-backend
+      - h-server-frontend
+    networks:
+      - app_network
+
+  scu:
+    image: asia-northeast3-docker.pkg.dev/rus-web/h-dicom-server/scu:${DICOM_IMAGE_TAG}
+    restart: always
+    platform: linux/amd64
+    ports:
+      - ${SCU_PORT}:8080
+    volumes:
+      - ./logs/gunicorn:/usr/logs/gunicorn
+      - ./logs/scu:/usr/logs/scu
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${SERVER_ENV}
+      APP_VERSION: ${DICOM_IMAGE_TAG}
+      PORT: 8080
+      AET: ${AET}
+      LOG_DIR: /usr/logs/scu
+      WORKERS: "1"
+      HDICOM_API_KEY: ${SERVER_CODE}
+    networks:
+      - app_network
+
+  scp:
+    image: asia-northeast3-docker.pkg.dev/rus-web/h-dicom-server/scp:${DICOM_IMAGE_TAG}
+    restart: always
+    platform: linux/amd64
+    ports:
+      - ${SCP_PORT}:1040
+    volumes:
+      - ./data/dicom:/usr/data/dicom
+      - ./data/dicom/temp:/usr/data/dicom/temp
+      - ./logs/scp:/usr/logs/scp
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${SERVER_ENV}
+      PORT: 1040
+      AET: ${AET}
+      PREFIX_HUID: ${SERVER_CODE}
+      LOCAL_DIR: /usr/data/dicom
+      REMOTE_DIR: /usr/data/dicom
+      RUS_URL: http://h-server-backend:9276
+      ASSOCIATIONS: ${MAX_ASSOCIATIONS}
+      HDICOM_API_KEY: ${SERVER_CODE}
+      LOG_DIR: /usr/logs/scp
+    links:
+      - h-server-backend
+    networks:
+      - app_network
+
+  redis:
+    image: asia-northeast3-docker.pkg.dev/rus-web/rus-onprem/h-server-redis:${BE_IMAGE_TAG}
+    restart: always
+    platform: linux/amd64
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

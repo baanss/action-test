@@ -1,0 +1,15 @@
+# env
+.env
+
+# private key
+integration/localCA/*
+!integration/localCA/README.md
+production/nginx/localCA/*
+!production/nginx/localCA/README.md
+
+# docker volume
+logs/
+data/
+database/
+
+localCA/
