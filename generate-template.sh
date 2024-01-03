@@ -2,8 +2,8 @@
 
 # Setting folder paths
 current_dir=$(pwd)
-parent_dir=$(dirname "$current_dir")
-folder_path="$parent_dir"
+# parent_dir=$(dirname "$current_dir")
+folder_path="$current_dir"
 
 # Function: Modify .env.template files
 modify_env_template() {

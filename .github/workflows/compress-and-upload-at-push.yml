@@ -28,17 +28,17 @@ jobs:
           chmod +x generate-template.sh
           ./generate-template.sh ${{ matrix.tag }} ${{ steps.extract-tag.outputs.tag_name }}
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: compressed-file-artifact
-          path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+      # - name: Upload Artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: compressed-file-artifact
+      #     path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: compressed-file-artifact
-          path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+      # - name: Download Artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: compressed-file-artifact
+      #     path: ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
 
       - name: Upload a file to Google Drive
         uses: willo32/google-drive-upload-action@v1
