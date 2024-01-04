@@ -28,23 +28,25 @@ jobs:
           chmod +x generate-template.sh
           ./generate-template.sh ${{ matrix.tag }} ${{ steps.extract-tag.outputs.tag_name }}
 
-      - name: Upload a file to Google Drive
-        uses: adityak74/google-drive-upload-git-action@main
-        with:
-          filename: h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
-          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
-
-      # - name: Make Directory Structure
-      #   run: |
-      #     mkdir -p w/x/y
-      #     date +%s > w/x/y/z
-
-      # - name: Mirror Directory Structure
+      # - name: Upload a file to Google Drive
       #   uses: adityak74/google-drive-upload-git-action@main
       #   with:
-      #     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
-      #     filename: w/x/y/z
+      #     filename: h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
       #     folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-      #     overwrite: "true"
-      #     mirrorDirectoryStructure: "true"
+      #     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
+
+      - name: Make Directory Structure
+        run: |
+          mkdir -p Release/${{ steps.extract-tag.outputs.tag_name }}
+
+      - name: Move File
+        run: mv ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip ${{ github.workspace }}/Release/${{ steps.extract-tag.outputs.tag_name }}/
+
+      - name: Mirror Directory Structure
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
+          filename: Release/${{ steps.extract-tag.outputs.tag_name }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          overwrite: "true"
+          mirrorDirectoryStructure: "true"
