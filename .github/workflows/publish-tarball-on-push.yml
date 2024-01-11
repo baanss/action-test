@@ -16,7 +16,7 @@ jobs:
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.GCP_AUTH_KEY }}
+          credentials_json: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: List Docker images in Artifact Registry
