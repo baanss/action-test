@@ -1,0 +1,37 @@
+name: Create Docker Image Tarball
+
+on:
+  push:
+    tags:
+      - "test*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_AUTH_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: List Docker images in Artifact Registry
+        run: |
+          gcloud artifacts docker images list $REGISTRY_URL --format="value(tags)" | tr ',' '\n' > images.txt
+
+      - name: Create Docker image tarball
+        run: |
+          cat images.txt | while read -r image_tag; do
+            docker pull $REGISTRY_URL/$image_tag
+          done
+          docker save -o docker_images.tar $(cat images.txt | tr '\n' ' ')
+
+      - name: Upload Docker image tarball as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker_images
+          path: docker_images.tar
