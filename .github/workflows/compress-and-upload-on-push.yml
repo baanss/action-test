@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tag: [sto, kid] # 실행할 태그를 여기에 지정하세요.
+        tag: [sto, kid]
 
     steps:
       - name: Checkout code
@@ -28,13 +28,6 @@ jobs:
           chmod +x generate-template.sh
           ./generate-template.sh ${{ matrix.tag }} ${{ steps.extract-tag.outputs.tag_name }}
 
-      # - name: Upload a file to Google Drive
-      #   uses: adityak74/google-drive-upload-git-action@main
-      #   with:
-      #     filename: h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip
-      #     folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-      #     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
-
       - name: Make Directory Structure
         run: |
           mkdir -p Release/${{ steps.extract-tag.outputs.tag_name }}
@@ -42,7 +35,7 @@ jobs:
       - name: Move File
         run: mv ${{ github.workspace }}/h-server-setting-${{ matrix.tag }}-${{ steps.extract-tag.outputs.tag_name }}.zip ${{ github.workspace }}/Release/${{ steps.extract-tag.outputs.tag_name }}/
 
-      - name: Mirror Directory Structure
+      - name: Upload a Directory with Mirror Directory Structure
         uses: adityak74/google-drive-upload-git-action@main
         with:
           credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}

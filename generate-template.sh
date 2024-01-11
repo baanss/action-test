@@ -35,6 +35,7 @@ delete_specific_files() {
     local files_to_delete=(
         "$folder_path/generate-template.sh"
         "$folder_path/.git"
+        "$folder_path/.github"
     )
 
     for file in "${files_to_delete[@]}"; do
