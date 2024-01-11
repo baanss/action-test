@@ -1,15 +1,54 @@
-# env
+# cache
+/python-anonymize/__pycache__
+
+# data
+/data
+/database/postgresql
+storage/*
+#env
 .env
 
-# private key
-integration/localCA/*
-!integration/localCA/README.md
-production/nginx/localCA/*
-!production/nginx/localCA/README.md
+# compiled output
+/dist
+/node_modules
 
-# docker volume
-logs/
-data/
-database/
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-localCA/
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# docs
+/documentation
+
+# test data
+test/*
+localCA/*
+!localCA/localhost.crt
+!localCA/localhost.key

@@ -1,0 +1,32 @@
+# docker 버전
+version: "3"
+
+services:
+  postgresql:
+    # docker hub에서 이미지 다운로드
+    image: postgres:13
+
+    # 컨테이너 이름 지정
+    container_name: h-server-postgresql
+
+    # 로컬의 6543번 포트와 컨테이너의 5432 포트 바인딩
+    ports:
+      - 6543:5432
+
+    # 생성할 DB 지정
+    environment:
+      POSTGRES_DB: hserver
+      POSTGRES_USER: hutom
+      POSTGRES_PASSWORD: hserver
+      TZ: UTC
+
+    # 데이터 저장 경로를 컨테이너 볼륨에 마운트
+    volumes:
+      - ./__test__/storage:/var/www/h-Server/data
+      # - ./database/postgresql:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.0.2
+    container_name: h-server-redis
+    ports:
+      - 6379:6379

@@ -1,0 +1,39 @@
+# build source files
+FROM node:16.9.1 AS build
+
+WORKDIR /usr/src/h_server_backend
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+# production
+FROM node:16.9.1 
+
+WORKDIR /usr/src/h_server_backend
+
+## python
+COPY requirements.txt .
+RUN apt-get update -y
+RUN apt-get install -y python-pip python3-pip python-dev build-essential
+
+RUN pip3 install -r requirements.txt
+
+COPY ./scripts scripts
+
+## node
+COPY package*.json ./
+RUN npm ci --only=production
+
+RUN npm install -g ts-node
+
+COPY . .
+COPY --from=build /usr/src/h_server_backend/dist dist
+
+CMD npm run migrate:run \
+    && npm run insert:test \ 
+    && npm run start

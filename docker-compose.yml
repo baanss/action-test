@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  h-server-backend:
+    image: ${SERVER_IMAGE_TAG}
+    restart: always
+    ports:
+      - ${PORT}:9276
+    volumes:
+      - ./data:/usr/data
+      - ./data/dicom:/usr/data/dicom
+      - ./logs/user:/usr/logs
+      - ./localCA/localhost.crt:/etc/ssl/localCA/localhost.crt
+      - ./localCA/localhost.key:/etc/ssl/localCA/localhost.key
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      SERVER_HOST: h-server-backend
+      SERVER_PORT: "9276"
+      SERVER_URL: ${SERVER_URL}
+      ORIGIN_DOMAIN: h-server-backend
+      APP_VERSION: ${SERVER_IMAGE_TAG}
+      SERVER_CODE: ${SERVER_CODE}
+      SERVICE_CODE: ${SERVICE_CODE}
+      DB_HOST: postgresql
+      DB_PORT: "5432"
+      DB_MIGRATION_FROM: ${DB_MIGRATION_FROM}
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      LOG_PATH: /usr/logs
+      STORAGE_PATH: /usr/data
+      HUID_START_INDEX: ${HUID_START_INDEX}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      HCLOUD_SERVER_URL: ${HCLOUD_SERVER_URL}
+      SIGNED_CERT_PATH: /etc/ssl/localCA/localhost.crt
+      SIGNED_KEY_PATH: /etc/ssl/localCA/localhost.key
+      QR_SERVER_URL: ${QR_SERVER_URL}
+      QR_TIMEOUT_MS: ${QR_TIMEOUT_MS}
+      QR_MAX_COUNT: ${QR_MAX_COUNT}
+      PACS_SERVER_HOST: ${PACS_SERVER_HOST}
+      PACS_SERVER_PORT: ${PACS_SERVER_PORT}
+      PACS_SERVER_AET: ${PACS_SERVER_AET}
+      SWAGGER_USER: ${SWAGGER_USER}
+      SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
+      CLIENT_TZ: ${CLIENT_TZ}
+      CRON_STATUS: ${CRON_STATUS}
+      ENCRYPTION: ${ENCRYPTION}
+      CRON_SCHEDULE: ${CRON_SCHEDULE}
+      CRON_LOG_SCHEDULE: ${CRON_LOG_SCHEDULE}
+      CRON_DICOM_EXPIRED_DAYS: ${CRON_DICOM_EXPIRED_DAYS}
+      CRON_SLEEP_USER_EXPIRED_DAYS: ${CRON_SLEEP_USER_EXPIRED_DAYS}
+      CRON_NOTIFICATION_EXPIRED_DAYS: ${CRON_NOTIFICATION_EXPIRED_DAYS}
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+      TZ: UTC
+
+  postgresql:
+    image: postgres:13
+    restart: always
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: UTC

@@ -1,0 +1,51 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+################# Check ESLint & Prettier #################
+echo $'\n---------------------- ⬇️ Styling your project before pushing ⬇️ ----------------------\n'
+
+# 현재 stage에 올라온 파일들에 대해서만 eslint, prettier 검사 진행
+npm run lint-staged ||
+(
+    echo $'\n❌ Fail to check styling. \nRun npm run lint, add changes and try push again. \n';
+    false;
+)
+
+echo $'\n✅ Clear to check styling!\n'
+
+################## Check TS compiler #################
+echo $'\n---------------------- ⬇️ Compiling your project before pushing ⬇️ ----------------------\n'
+
+# 전체 파일에 대해서만 tsc 검사 진행
+npm run tsc ||
+(
+    echo $'\n❌ Fail to check TS compiling. \nRun npm run tsc, add changes and try push again. \n';
+    false;
+)
+
+echo $' \n✅ Clear to check TS compiler!\n'
+
+################## Check test #################
+echo $'\n---------------------- ⬇️ Testing before pushing ⬇️ ----------------------\n'
+
+# database 열기
+npm run stop:dev-database && npm run start:dev-database || 
+{
+    echo $'\n❌ Fail to run database. \nRun npm run start:dev-database, and try push again. \n';
+    false;
+}
+
+# 전체 파일에 대해서 test 진행
+npm run test ||
+(
+    echo $'\n❌ Fail to check test. \nRun npm run test, add changes and try push again. \n';
+    false;
+)
+
+echo $' \n✅ Clear to check test! pushing this now... \n'
+
+# database 닫기
+npm run stop:dev-database || 
+{
+    echo $'\n❌ Fail to stop database. \nRun npm run stop:dev-database, database service still running...\n';
+}

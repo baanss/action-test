@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  h-server-backend-docs:
+    # NOTE: 도커이미지 태그 재설정
+    image: h-server-backend:docs
+    container_name: docs
+    restart: always
+    # NOTE: 설계문서 확인 PORT
+    ports:
+      - 8080:8080
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
