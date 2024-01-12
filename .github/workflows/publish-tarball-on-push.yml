@@ -27,27 +27,20 @@ jobs:
           username: _json_key
           password: ${{ secrets.GAR_KEY }}
 
-      - name: Decode GCP Service Key
+      - name: Pull Docker image from GAR
         run: |
-          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}" | base64 --decode > keyfile.json
-
-      - name: Authenticate with Google Cloud
-        run: |
-          gcloud auth activate-service-account --key-file=keyfile.json
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-
-      - name: List Docker images in GAR repository
-        run: |
-          # Remove trailing '/' from the image name
-          IMAGE_NAME=$(echo "asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar" | sed 's:/*$::')
-          gcloud container images list-tags $IMAGE_NAME --format="value(tags)" > images.txt
+          docker pull asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/h-server-backend:${{ steps.extract-tag.outputs.tag_name }}
+          docker pull asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/h-server-database:${{ steps.extract-tag.outputs.tag_name }}
+          docker pull asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/h-server-redis:${{ steps.extract-tag.outputs.tag_name }}
+          docker pull asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/h-server-nginx:${{ steps.extract-tag.outputs.tag_name }}
 
       - name: Create Docker image tarball
         run: |
-          while read -r image_tag; do
-            docker pull $image_tag
-          done
-          docker save -o docker_images.tar $(cat images.txt | tr '\n' ' ')
+          docker save -o h-server-docker-${{ steps.extract-tag.outputs.tag_name }}.tar \ 
+          asia-northeast1-docker.pkg.dev/test-gar/h-server-backend:${{ steps.extract-tag.outputs.tag_name }}
+          asia-northeast1-docker.pkg.dev/test-gar/h-server-database:${{ steps.extract-tag.outputs.tag_name }}
+          asia-northeast1-docker.pkg.dev/test-gar/h-server-redis:${{ steps.extract-tag.outputs.tag_name }}
+          asia-northeast3-docker.pkg.dev/test-gar/h-server-nginx:${{ steps.extract-tag.outputs.tag_name }}
 
       # - name: Upload a Directory with Mirror Directory Structure
       #   uses: adityak74/google-drive-upload-git-action@main
