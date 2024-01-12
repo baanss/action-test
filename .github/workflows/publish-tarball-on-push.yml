@@ -1,4 +1,4 @@
-name: Create Docker Image Tarball
+name: Create Docker Image Tarball by Retrieved Docker Images from GAR
 
 on:
   push:
@@ -13,25 +13,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: List Docker images in Artifact Registry
+      - name: Extract tag name
+        id: extract-tag
         run: |
-          gcloud artifacts docker images list $REGISTRY_URL --format="value(tags)" | tr ',' '\n' > images.txt
+          TAG_NAME=$(echo $GITHUB_REF | awk -F'/' '{print $NF}')
+          echo "Extracted tag name is: $TAG_NAME"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Login to Google Artifact Registry
+        uses: docker/login-action@v2
+        with:
+          registry: asia-northeast1-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GAR_KEY }}
+
+      - name: List Docker images in GAR repository
+        run: |
+          # Use 'docker search' to list images in the repository with a specific tag
+          docker search asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/ --format "{{.Name}}:{{.Tag}}" > images.txt
 
       - name: Create Docker image tarball
         run: |
-          cat images.txt | while read -r image_tag; do
-            docker pull $REGISTRY_URL/$image_tag
+          # Read the images.txt file and pull each image
+          while read -r image_tag; do
+            docker pull $image_tag
           done
-          docker save -o docker_images.tar $(cat images.txt | tr '\n' ' ')
+          # Save pulled images to a tarball
+          docker save -o docker_images.tar $(cat images.txt)
 
-      - name: Upload Docker image tarball as artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload a Directory with Mirror Directory Structure
+        uses: adityak74/google-drive-upload-git-action@main
         with:
-          name: docker_images
-          path: docker_images.tar
+          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
+          filename: Release/${{ steps.extract-tag.outputs.tag_name }}/docker_images.tar
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          overwrite: "true"
+          mirrorDirectoryStructure: "true"
