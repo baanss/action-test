@@ -37,9 +37,9 @@ jobs:
       - name: Create Docker image tarball
         run: |
           docker save -o h-server-docker-${{ steps.extract-tag.outputs.tag_name }}.tar \ 
-          asia-northeast1-docker.pkg.dev/test-gar/h-server-backend:${{ steps.extract-tag.outputs.tag_name }}
-          asia-northeast1-docker.pkg.dev/test-gar/h-server-database:${{ steps.extract-tag.outputs.tag_name }}
-          asia-northeast1-docker.pkg.dev/test-gar/h-server-redis:${{ steps.extract-tag.outputs.tag_name }}
+          asia-northeast1-docker.pkg.dev/test-gar/h-server-backend:${{ steps.extract-tag.outputs.tag_name }} \ 
+          asia-northeast1-docker.pkg.dev/test-gar/h-server-database:${{ steps.extract-tag.outputs.tag_name }} \ 
+          asia-northeast1-docker.pkg.dev/test-gar/h-server-redis:${{ steps.extract-tag.outputs.tag_name }} \ 
           asia-northeast3-docker.pkg.dev/test-gar/h-server-nginx:${{ steps.extract-tag.outputs.tag_name }}
 
       # - name: Upload a Directory with Mirror Directory Structure
