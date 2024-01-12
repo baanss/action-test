@@ -7,8 +7,7 @@ on:
         description: "build and push on workflow_dispatch"
   push:
     tags:
-      - "dev-*"
-      - "v*"
+      - "buildtest-*"
 
 jobs:
   build-and-push:

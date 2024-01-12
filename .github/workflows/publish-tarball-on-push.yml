@@ -3,7 +3,7 @@ name: Create Docker Image Tarball
 on:
   push:
     tags:
-      - "test*"
+      - "tar-test-*"
 
 jobs:
   build:
