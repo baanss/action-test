@@ -3,7 +3,7 @@ name: Create Docker Image Tarball by Retrieved Docker Images from GAR
 on:
   push:
     tags:
-      - "tar-test-*"
+      - "v*"
 
 jobs:
   build:
