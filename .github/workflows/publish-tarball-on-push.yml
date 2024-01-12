@@ -38,7 +38,9 @@ jobs:
 
       - name: List Docker images in GAR repository
         run: |
-          gcloud container images list-tags asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/ --format="value(tags)" > images.txt
+          # Remove trailing '/' from the image name
+          IMAGE_NAME=$(echo "asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar" | sed 's:/*$::')
+          gcloud container images list-tags $IMAGE_NAME --format="value(tags)" > images.txt
 
       - name: Create Docker image tarball
         run: |
