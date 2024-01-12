@@ -29,8 +29,8 @@ jobs:
 
       - name: List Docker images in GAR repository
         run: |
-          # Use 'docker search' to list images in the repository with a specific tag
-          docker search asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/ --format "{{.Name}}:{{.Tag}}" > images.txt
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+          gcloud container images list-tags asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/ --format="value(tags)" > images.txt
 
       - name: Create Docker image tarball
         run: |
