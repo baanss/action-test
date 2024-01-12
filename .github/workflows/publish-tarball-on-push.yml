@@ -27,25 +27,31 @@ jobs:
           username: _json_key
           password: ${{ secrets.GAR_KEY }}
 
+      - name: Decode GCP Service Key
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}" | base64 --decode > keyfile.json
+
+      - name: Authenticate with Google Cloud
+        run: |
+          gcloud auth activate-service-account --key-file=keyfile.json
+          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+
       - name: List Docker images in GAR repository
         run: |
-          gcloud auth configure-docker asia-northeast1-docker.pkg.dev
           gcloud container images list-tags asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/test-gar/ --format="value(tags)" > images.txt
 
       - name: Create Docker image tarball
         run: |
-          # Read the images.txt file and pull each image
           while read -r image_tag; do
             docker pull $image_tag
           done
-          # Save pulled images to a tarball
-          docker save -o docker_images.tar $(cat images.txt)
+          docker save -o docker_images.tar $(cat images.txt | tr '\n' ' ')
 
-      - name: Upload a Directory with Mirror Directory Structure
-        uses: adityak74/google-drive-upload-git-action@main
-        with:
-          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
-          filename: Release/${{ steps.extract-tag.outputs.tag_name }}/docker_images.tar
-          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          overwrite: "true"
-          mirrorDirectoryStructure: "true"
+      # - name: Upload a Directory with Mirror Directory Structure
+      #   uses: adityak74/google-drive-upload-git-action@main
+      #   with:
+      #     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
+      #     filename: Release/${{ steps.extract-tag.outputs.tag_name }}/docker_images.tar
+      #     folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+      #     overwrite: "true"
+      #     mirrorDirectoryStructure: "true"
